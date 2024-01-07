@@ -1,0 +1,11 @@
+src/__pycache__/sudoku.cpython-310.pyc
+sudoku_project/db.sqlite3
+sudoku_project/sudoku_app/__pycache__/__init__.cpython-310.pyc
+sudoku_project/sudoku_app/__pycache__/puzzle_generator.cpython-310.pyc
+sudoku_project/sudoku_app/__pycache__/sudoku.cpython-310.pyc
+sudoku_project/sudoku_app/__pycache__/urls.cpython-310.pyc
+sudoku_project/sudoku_app/__pycache__/views.cpython-310.pyc
+sudoku_project/sudoku_project/__pycache__/__init__.cpython-310.pyc
+sudoku_project/sudoku_project/__pycache__/settings.cpython-310.pyc
+sudoku_project/sudoku_project/__pycache__/urls.cpython-310.pyc
+sudoku_project/sudoku_project/__pycache__/wsgi.cpython-310.pyc
