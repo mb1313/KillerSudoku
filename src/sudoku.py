@@ -12,15 +12,15 @@ easyPuzzle = [[4, 9, 7, 3, 0, 0, 5, 0, 0],
                 [7, 6, 0, 0, 3, 9, 0, 0, 0],
                 [0, 1, 9, 0, 0, 0, 3, 0, 0]]
 
-hardPuzzle = [[0, 0, 0, 0, 0, 0, 8, 0, 0],
-                [2, 1, 0, 3, 0, 0, 0, 0, 0],
-                [7, 0, 3, 2, 4, 0, 0, 0, 0],
-                [0, 6, 0, 4, 5, 0, 0, 0, 8],
-                [0, 8, 5, 0, 0, 6, 0, 0, 9],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 2, 0, 0, 0, 4],
-                [6, 0, 0, 0, 0, 3, 0, 5, 0],
-                [0, 0, 0, 0, 0, 0, 6, 1, 0]]
+hardPuzzle = [[1, 0, 8, 0, 9, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 7, 0, 0],
+                [0, 4, 0, 0, 0, 3, 0, 5, 6],
+                [0, 7, 0, 0, 0, 0, 3, 0, 0],
+                [0, 0, 0, 0, 0, 1, 2, 0, 0],
+                [0, 0, 4, 8, 0, 0, 0, 7, 1],
+                [6, 0, 0, 3, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 2],
+                [0, 5, 0, 0, 0, 6, 0, 1, 4]]
 
 def print_grid(grid):
     horizontal_line = '+-------+-------+-------+'
@@ -79,6 +79,92 @@ def count_sets(arr, set):
             count += 1
     return count
 
+def find_hidden_sets(arr):
+    occurrences = {}
+    for cell in arr:
+        # if len(cell) > 1:
+            for value in cell:
+                if value in occurrences:
+                    occurrences[value].append(cell)
+                else:
+                    occurrences[value] = [cell]
+        
+    hidden_sets = {}
+    for value, cells in occurrences.items():
+        occurrences_count = len(cells)
+        if 1 < occurrences_count < 10:
+            if occurrences_count not in hidden_sets:
+                hidden_sets[occurrences_count] = {}
+            if value not in hidden_sets[occurrences_count]:
+                hidden_sets[occurrences_count][value] = cells
+            
+    for occurrences_count, sets in hidden_sets.items():
+        if len(sets.values()) == occurrences_count:
+            hidden = set(sets.keys())
+            resident = []
+            match = True
+            for val in sets.values():
+                if len(resident) == 0:
+                    resident = val
+                elif resident != val:
+                    match = False
+            if match:
+                for j in range(9):
+                    if len(hidden - arr[j]) == 0:
+                        arr[j] = hidden
+                        print(f"Hidden set of {occurrences_count} with value {hidden} in row {i} at cells: {sets.values()}")
+
+def exclusive_square_row(grid):
+    for r in range(9):
+        for c in range(3):
+            square = grid[(r//3)*3: (r//3)*3 + 3, (c)*3: (c)*3 + 3].flatten()
+            subsection = np.delete(square, [r%3 * 3, r%3 * 3 + 1, r%3 * 3 + 2])
+            row = np.delete(grid[r], [c*3, c*3 + 1, c*3 + 2])
+            setSquare = set().union(*subsection)
+            setRow = set().union(*row)
+            diff = set()
+            if len(setSquare - setRow) > 0:
+                diff.update(setSquare - setRow)
+            elif len(setRow - setSquare) > 0:
+                diff.update(setRow - setSquare)
+            if len(diff) > 0:
+                for c2 in range(9):
+                    if c2 != c*3 and c2 != c*3+1 and c2 != c*3+2:
+                        grid[r][c2] = grid[r][c2] - diff
+                for r2 in range(3):
+                    rowIndex = r//3 * 3 + r2
+                    if rowIndex != r:
+                        grid[rowIndex][c*3] = grid[rowIndex][c*3] - diff
+                        grid[rowIndex][c*3+1] = grid[rowIndex][c*3+1] - diff
+                        grid[rowIndex][c*3+2] = grid[rowIndex][c*3+2] - diff
+
+def exclusive_square_col(grid):
+    for c in range(9):
+        for r in range(3):
+            square = grid[(r)*3: (r)*3 + 3, (c//3)*3: (c//3)*3 + 3].flatten()
+            subsection = np.delete(square, [c%3, c%3+3, c%3+6])
+            col = grid[:, c].flatten()
+            col = np.delete(col, [r*3, r*3 + 1, r*3 + 2])
+            print("col", col)
+            setSquare = set().union(*subsection)
+            setCol = set().union(*col)
+            diff = set()
+            if len(setSquare - setCol) > 0:
+                diff.update(setSquare - setCol)
+            elif len(setCol - setSquare) > 0:
+                diff.update(setCol - setSquare)
+            if len(diff) > 0:
+                print(r, diff)
+                for r2 in range(9):
+                    if r2 != r*3 and r2 != r*3+1 and r2 != r*3+2:
+                        grid[r2][c] = grid[r2][c] - diff
+                for c2 in range(3):
+                    colIndex = c//3 * 3 + c2
+                    if colIndex != c:
+                        grid[r*3][colIndex] = grid[r*3][colIndex] - diff
+                        grid[r*3+1][colIndex] = grid[r*3+1][colIndex] - diff
+                        grid[r*3+2][colIndex] = grid[r*3+2][colIndex] - diff
+                        
 def row_solver(row, cell, index):
     tmp = cell
     for j in range(9):
@@ -132,24 +218,28 @@ def singlesSolver(grid, count):
             
             elif len(cell) != 9:
                 if (count_sets(grid[i], cell) == len(cell)):
-                    print(i, j)
                     for k in range(9):
                         if (len(grid[i][k] - cell) > 0):
+                            count += 1
                             grid[i][k] = grid[i][k] - cell
                 if (count_sets(grid[:, j], cell) == len(cell)):
-                    print(i, j)
                     for k in range(9):
                         if (len(grid[k][j] - cell) > 0):
+                            count += 1
                             grid[k][j] = grid[k][j] - cell
-                if (count_sets(grid[(i//3)*3: (i//3)*3 + 3, (j//3)*3: (j//3)*3 + 3], cell) == len(cell)):
-                    for element in grid[(i//3)*3: (i//3)*3 + 3, (j//3)*3: (j//3)*3 + 3]:
-                        if (len(element - cell) > 0):
-                            element = element - cell
-            
+                if (count_sets((grid[(i//3)*3: (i//3)*3 + 3, (j//3)*3: (j//3)*3 + 3]).flatten(), cell) == len(cell)):
+                    for r in range(3):
+                        for c in range(3):
+                            element = grid[i//3*3 + r][j//3*3 + c]
+                            if (len(element - cell) > 0):
+                                count += 1
+                                grid[i//3*3 + r][j//3*3 + c] = grid[i//3*3 + r][j//3*3 + c] - cell
+                count += 27
             if len(cell) > 1:
                 col_solver(grid[:, j], cell, i)
                 row_solver(grid[i], cell, j)
                 square_solver(grid[(i//3)*3: (i//3)*3 + 3, (j//3)*3: (j//3)*3 + 3], cell, i % 3, j % 3)
+                count += 24
 
     return count
 
@@ -163,7 +253,18 @@ while (any(len(grid[row][col]) > 1 for row in range(9) for col in range(9))):
     print("Iteration: ", iteration, "\n")
     beforeGrid = np.copy(grid)
     count = singlesSolver(grid=grid, count=count)
+    for i in range(9):
+        find_hidden_sets(grid[i])
+        find_hidden_sets(grid[:, i])
+    
+    for i in range(3):
+        for j in range(3):
+            square = grid[i*3: i*3 +3, j*3: j*3+3]
+            square = square.flatten()
+            find_hidden_sets(square)
 
+    exclusive_square_row(grid)
+    # exclusive_square_col(grid)
     print_grid(grid=grid)
     print(count)
     if (np.equal(beforeGrid, grid).all()):
