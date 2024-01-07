@@ -12,15 +12,25 @@ easyPuzzle = [[4, 9, 7, 3, 0, 0, 5, 0, 0],
                 [7, 6, 0, 0, 3, 9, 0, 0, 0],
                 [0, 1, 9, 0, 0, 0, 3, 0, 0]]
 
-hardPuzzle = [[1, 0, 8, 0, 9, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 7, 0, 0],
-                [0, 4, 0, 0, 0, 3, 0, 5, 6],
-                [0, 7, 0, 0, 0, 0, 3, 0, 0],
-                [0, 0, 0, 0, 0, 1, 2, 0, 0],
-                [0, 0, 4, 8, 0, 0, 0, 7, 1],
-                [6, 0, 0, 3, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 2],
-                [0, 5, 0, 0, 0, 6, 0, 1, 4]]
+expertPuzzle = [[0, 7, 8, 5, 0, 0, 0, 0, 0],
+                [0, 0, 3, 0, 0, 7, 8, 0, 0],
+                [0, 0, 0, 1, 9, 0, 0, 0, 0],
+                [0, 0, 7, 0, 0, 0, 2, 9, 0],
+                [0, 9, 0, 0, 6, 1, 0, 4, 0],
+                [0, 0, 0, 0, 0, 4, 0, 0, 0],
+                [3, 0, 6, 0, 0, 2, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0, 0, 4],
+                [0, 0, 0, 0, 0, 0, 5, 0, 0]]
+
+masterPuzzle = [[0, 0, 3, 0, 0, 0, 0, 0, 2],
+                [0, 8, 0, 0, 5, 0, 0, 0, 0],
+                [7, 0, 0, 8, 0, 0, 0, 4, 9],
+                [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 6, 0, 0, 3, 0, 0, 0],
+                [9, 0, 0, 5, 0, 0, 0, 7, 8],
+                [0, 0, 9, 0, 6, 0, 0, 1, 4],
+                [0, 0, 0, 4, 0, 0, 2, 0, 0],
+                [1, 0, 0, 0, 0, 0, 5, 0, 0]]
 
 def print_grid(grid):
     horizontal_line = '+-------+-------+-------+'
@@ -114,7 +124,7 @@ def find_hidden_sets(arr):
                         arr[j] = hidden
                         print(f"Hidden set of {occurrences_count} with value {hidden} in row {i} at cells: {sets.values()}")
 
-def exclusive_square_row(grid):
+def exclusive_square_row(grid, count):
     for r in range(9):
         for c in range(3):
             square = grid[(r//3)*3: (r//3)*3 + 3, (c)*3: (c)*3 + 3].flatten()
@@ -131,21 +141,23 @@ def exclusive_square_row(grid):
                 for c2 in range(9):
                     if c2 != c*3 and c2 != c*3+1 and c2 != c*3+2:
                         grid[r][c2] = grid[r][c2] - diff
+                        count += 1
                 for r2 in range(3):
                     rowIndex = r//3 * 3 + r2
                     if rowIndex != r:
                         grid[rowIndex][c*3] = grid[rowIndex][c*3] - diff
                         grid[rowIndex][c*3+1] = grid[rowIndex][c*3+1] - diff
                         grid[rowIndex][c*3+2] = grid[rowIndex][c*3+2] - diff
+                        count += 3
+    return count
 
-def exclusive_square_col(grid):
+def exclusive_square_col(grid, count):
     for c in range(9):
         for r in range(3):
             square = grid[(r)*3: (r)*3 + 3, (c//3)*3: (c//3)*3 + 3].flatten()
             subsection = np.delete(square, [c%3, c%3+3, c%3+6])
             col = grid[:, c].flatten()
             col = np.delete(col, [r*3, r*3 + 1, r*3 + 2])
-            print("col", col)
             setSquare = set().union(*subsection)
             setCol = set().union(*col)
             diff = set()
@@ -154,17 +166,19 @@ def exclusive_square_col(grid):
             elif len(setCol - setSquare) > 0:
                 diff.update(setCol - setSquare)
             if len(diff) > 0:
-                print(r, diff)
                 for r2 in range(9):
                     if r2 != r*3 and r2 != r*3+1 and r2 != r*3+2:
                         grid[r2][c] = grid[r2][c] - diff
+                        count += 1
                 for c2 in range(3):
                     colIndex = c//3 * 3 + c2
                     if colIndex != c:
                         grid[r*3][colIndex] = grid[r*3][colIndex] - diff
                         grid[r*3+1][colIndex] = grid[r*3+1][colIndex] - diff
                         grid[r*3+2][colIndex] = grid[r*3+2][colIndex] - diff
-                        
+                        count += 3
+    return count
+
 def row_solver(row, cell, index):
     tmp = cell
     for j in range(9):
@@ -191,12 +205,12 @@ def square_solver(square, cell, i, j):
     if len(tmp) == 1:
         square[i][j] = tmp
 
-def singlesSolver(grid, count):
+def singlesSolver(grid, count, hard):
     for i in range(9):
         for j in range(9):
             cell = grid[i][j]
             count += 1
-
+                
             if (len(cell) == 1):
                 # print("Found value ", cell, " in row ", i+1)
                 for k in range(9):
@@ -216,7 +230,7 @@ def singlesSolver(grid, count):
                             count += 1
                             square[r][c] = square[r][c] - cell
             
-            elif len(cell) != 9:
+            elif len(cell) != 9 and hard:
                 if (count_sets(grid[i], cell) == len(cell)):
                     for k in range(9):
                         if (len(grid[i][k] - cell) > 0):
@@ -235,6 +249,8 @@ def singlesSolver(grid, count):
                                 count += 1
                                 grid[i//3*3 + r][j//3*3 + c] = grid[i//3*3 + r][j//3*3 + c] - cell
                 count += 27
+                
+            
             if len(cell) > 1:
                 col_solver(grid[:, j], cell, i)
                 row_solver(grid[i], cell, j)
@@ -244,27 +260,32 @@ def singlesSolver(grid, count):
     return count
 
 
-fill_in_given_cells(grid=grid, puzzle=hardPuzzle)
+
+fill_in_given_cells(grid=grid, puzzle=expertPuzzle)
 print_grid(grid=grid)
 iteration = 1
 count = 0
+hard = True
 
 while (any(len(grid[row][col]) > 1 for row in range(9) for col in range(9))):
     print("Iteration: ", iteration, "\n")
     beforeGrid = np.copy(grid)
-    count = singlesSolver(grid=grid, count=count)
-    for i in range(9):
-        find_hidden_sets(grid[i])
-        find_hidden_sets(grid[:, i])
+    count = singlesSolver(grid=grid, count=count, hard=hard)
     
-    for i in range(3):
-        for j in range(3):
-            square = grid[i*3: i*3 +3, j*3: j*3+3]
-            square = square.flatten()
-            find_hidden_sets(square)
+    if hard:
+        for i in range(9):
+            find_hidden_sets(grid[i])
+            find_hidden_sets(grid[:, i])
+        
+        for i in range(3):
+            for j in range(3):
+                square = grid[i*3: i*3 +3, j*3: j*3+3]
+                square = square.flatten()
+                find_hidden_sets(square)
 
-    exclusive_square_row(grid)
-    # exclusive_square_col(grid)
+        count = exclusive_square_row(grid, count)
+        count = exclusive_square_col(grid, count)
+        
     print_grid(grid=grid)
     print(count)
     if (np.equal(beforeGrid, grid).all()):
