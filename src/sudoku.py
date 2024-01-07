@@ -1,7 +1,5 @@
 import numpy as np
 
-grid = [[set([1, 2, 3, 4, 5, 6, 7, 8, 9]) for _ in range(9)] for _ in range(9)]
-grid = np.array(grid)
 easyPuzzle = [[4, 9, 7, 3, 0, 0, 5, 0, 0],
                 [1, 0, 0, 9, 0, 8, 0, 3, 7],
                 [5, 0, 3, 6, 7, 4, 0, 0, 0],
@@ -122,7 +120,7 @@ def find_hidden_sets(arr):
                 for j in range(9):
                     if len(hidden - arr[j]) == 0:
                         arr[j] = hidden
-                        print(f"Hidden set of {occurrences_count} with value {hidden} in row {i} at cells: {sets.values()}")
+                        # print(f"Hidden set of {occurrences_count} with value {hidden} in row {i} at cells: {sets.values()}")
 
 def exclusive_square_row(grid, count):
     for r in range(9):
@@ -260,37 +258,41 @@ def singlesSolver(grid, count, hard):
     return count
 
 
-
-fill_in_given_cells(grid=grid, puzzle=expertPuzzle)
-print_grid(grid=grid)
-iteration = 1
-count = 0
-hard = True
-
-while (any(len(grid[row][col]) > 1 for row in range(9) for col in range(9))):
-    print("Iteration: ", iteration, "\n")
-    beforeGrid = np.copy(grid)
-    count = singlesSolver(grid=grid, count=count, hard=hard)
-    
-    if hard:
-        for i in range(9):
-            find_hidden_sets(grid[i])
-            find_hidden_sets(grid[:, i])
-        
-        for i in range(3):
-            for j in range(3):
-                square = grid[i*3: i*3 +3, j*3: j*3+3]
-                square = square.flatten()
-                find_hidden_sets(square)
-
-        count = exclusive_square_row(grid, count)
-        count = exclusive_square_col(grid, count)
-        
+def solve_puzzle(puzzle, hard):
+    grid = [[set([1, 2, 3, 4, 5, 6, 7, 8, 9]) for _ in range(9)] for _ in range(9)]
+    grid = np.array(grid)
+    fill_in_given_cells(grid=grid, puzzle=puzzle)
     print_grid(grid=grid)
-    print(count)
-    if (np.equal(beforeGrid, grid).all()):
-        print("IMPOSSIBLE!!\n")
-        break
-    iteration += 1
+    iteration = 1
+    count = 0
 
-print_solution(grid)
+    while (any(len(grid[row][col]) > 1 for row in range(9) for col in range(9))):
+        print("Iteration: ", iteration, "\n")
+        beforeGrid = np.copy(grid)
+        count = singlesSolver(grid=grid, count=count, hard=hard)
+        
+        if hard:
+            for i in range(9):
+                find_hidden_sets(grid[i])
+                find_hidden_sets(grid[:, i])
+            
+            for i in range(3):
+                for j in range(3):
+                    square = grid[i*3: i*3 +3, j*3: j*3+3]
+                    square = square.flatten()
+                    find_hidden_sets(square)
+
+            count = exclusive_square_row(grid, count)
+            count = exclusive_square_col(grid, count)
+            
+        print_grid(grid=grid)
+        print(count)
+        if (np.equal(beforeGrid, grid).all()):
+            print("IMPOSSIBLE!!\n")
+            print_solution(grid)
+            return False, iteration
+        
+        iteration += 1
+
+    print_solution(grid)
+    return True, iteration
