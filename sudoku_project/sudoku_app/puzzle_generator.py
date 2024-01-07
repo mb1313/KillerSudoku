@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from sudoku import solve_puzzle
+from .sudoku import solve_puzzle
 def is_valid(grid, row, col, num):
     # Check if the current number is already in the row
     if num in grid[row]:
@@ -68,20 +68,24 @@ def rid_cells(grid, difficulty):
         grid[i][j] = 0
         k += 1
 
-grid = generate_sudoku()
-print(grid)
-subs = np.copy(grid)
-diffs = ['easy', 'med', 'hard', 'expert']
-index = 2
-print("diff", diffs[index])
-rid_cells(subs, diffs[index])
-tries = 1
-hard = index > 1
-while (not solve_puzzle(subs, hard)[0]):
-    print(subs)
+def form_puzzle(index):
+    grid = generate_sudoku()
+    print(grid)
     subs = np.copy(grid)
+    diffs = ['easy', 'med', 'hard', 'expert']
+    print("diff", diffs[index])
     rid_cells(subs, diffs[index])
-    tries += 1
-print(subs)
-print("Puzzles tried: ", tries)
-print(np.count_nonzero(subs))
+    tries = 1
+    hard = index > 1
+    while (not solve_puzzle(subs, hard)[0]):
+        print(subs)
+        subs = np.copy(grid)
+        rid_cells(subs, diffs[index])
+        tries += 1
+    print(subs)
+    print("Puzzles tried: ", tries)
+    print(np.count_nonzero(subs))
+    return subs, grid
+
+
+sudoku_puzzle, sudoku_sol = form_puzzle(0)  # Generate a Sudoku puzzle using your generator function

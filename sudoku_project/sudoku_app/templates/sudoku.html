@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sudoku Puzzle</title>
+    <style>
+        /* Styling for the Sudoku grid */
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        td {
+            border: 1px solid #000;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            background: transparent;
+        }
+        .block {
+            width: 0px;
+            border: 2px solid #000;
+        }
+        td .block {
+            width: 0px;
+            padding: 0;
+            border-width: 1px 0 0 1px;
+        }
+        .block td:first-child {
+            border-left: 2px solid #000;
+        }
+        .block td:first-child,
+        .block tr:first-child td {
+            border-top: 2px solid #000;
+        }
+        .block tr:last-child td {
+            border-bottom: 2px solid #000;
+        }
+
+        .correct {
+            background-color: #add8e6; /* Light blue */
+        }
+        .incorrect {
+            background-color: #ffcccc; /* Light red */
+        }
+    </style>
+</head>
+<body>
+    <h1>Sudoku Puzzle</h1>
+    
+    <form id="sudokuForm">
+        <table>
+            {% for row in sudoku_grid %}
+                {% if forloop.counter0 == 3 or forloop.counter0 == 6 %}
+                    <tr class="block"></tr>
+                {% endif %}
+                <tr>
+                    {% for cell in row %}
+                        {% if cell == 0 %}
+                            <td><input type="text" maxlength="1" size="1" name="cell_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}"></td>
+                        {% else %}
+                            <td>{{ cell }}</td>
+                        {% endif %}
+                        {% if forloop.counter0 == 2 or forloop.counter0 == 5 or forloop.counter0 == 8 %}
+                            <td class="block"></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+        <input type="button" value="Submit" onclick="submitSudoku()">
+    </form>
+
+    <script>
+        function submitSudoku() {
+            // Extract input values from the form
+            let formData = new FormData(document.getElementById("sudokuForm"));
+            let userAnswers = {};
+            for (let [key, value] of formData.entries()) {
+                userAnswers[key] = value;
+            }
+
+            // Get the completed Sudoku puzzle data (replace this with your completed puzzle data)
+            let completedSudoku = [
+    [7, 5, 8, 2, 1, 9, 4, 3, 6],
+    [9, 4, 2, 3, 8, 6, 7, 1, 5],
+    [1, 6, 3, 4, 7, 5, 8, 9, 2],
+    [8, 2, 9, 7, 3, 1, 5, 6, 4],
+    [4, 1, 6, 5, 2, 8, 9, 7, 3],
+    [5, 3, 7, 6, 9, 4, 2, 8, 1],
+    [3, 9, 1, 8, 5, 2, 6, 4, 7],
+    [2, 7, 4, 9, 6, 3, 1, 5, 8],
+    [6, 8, 5, 1, 4, 7, 3, 2, 9]
+];
+
+            // Compare user's answers with the completed Sudoku
+            let isCorrect = true;
+            for (let key in userAnswers) {
+                let [row, col] = key.split('_').slice(1).map(Number);
+                let userValue = Number(userAnswers[key]);
+                let correctValue = completedSudoku[row][col];
+                let cell = document.getElementsByName(key)[0].parentNode;
+                if (userValue !== correctValue) {
+                    console.log("incorrect\n");
+                    cell.classList.add('incorrect');
+                    isCorrect = false;
+                } else {
+                    cell.classList.remove('incorrect');
+                    cell.classList.add('correct');
+                }
+            }
+
+            if (isCorrect) {
+                alert('Congratulations! Your Sudoku solution is correct!');
+            } else {
+                alert('Oops! There are incorrect cells. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>
