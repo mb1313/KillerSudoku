@@ -57,7 +57,7 @@ def rid_cells(grid, difficulty):
     if (difficulty == 'hard'):
         missing = missing + 7 + int(random.random() / 2 * 10)
     if (difficulty == 'expert'):
-        missing = missing + 12 + int(random.random() / 2 * 10)
+        missing = missing + 10 + int(random.random() / 2 * 10)
     k = 0
     print("missing", missing)
     while k < missing:
@@ -67,7 +67,19 @@ def rid_cells(grid, difficulty):
             k -= 1
         grid[i][j] = 0
         k += 1
-
+    
+def prune_expert(grid):
+    rid = 5 + int(random.random() * 4)
+    copy = np.copy(grid)
+    for k in range(rid):
+        for cell in copy:
+            if cell != 0:
+                tmp = cell
+                cell = 0
+                if solve_puzzle(copy, True)[0]:
+                    break
+                cell = tmp
+                
 def form_puzzle(index):
     grid = generate_sudoku()
     print(grid)
@@ -77,7 +89,16 @@ def form_puzzle(index):
     rid_cells(subs, diffs[index])
     tries = 1
     hard = index > 1
-    while (not solve_puzzle(subs, hard)[0]):
+    solvabale = False
+    while (not solvabale):
+        tmp = np.copy(subs)
+        solvabale, iters = solve_puzzle(subs, hard)
+        if hard:
+            solvabale = solvabale and iters > 2
+        # if index == 3:
+        #     solvabale = solvabale and not (solve_puzzle(tmp, False)[0])
+        if solvabale:
+            break
         print(subs)
         subs = np.copy(grid)
         rid_cells(subs, diffs[index])
@@ -88,4 +109,4 @@ def form_puzzle(index):
     return subs, grid
 
 
-sudoku_puzzle, sudoku_sol = form_puzzle(0)  # Generate a Sudoku puzzle using your generator function
+sudoku_puzzle, sudoku_sol = form_puzzle(3)  # Generate a Sudoku puzzle using your generator function
